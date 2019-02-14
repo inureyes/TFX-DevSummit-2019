@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Python source file include taxi pipeline functions and necesasry utils."""
+
 from __future__ import division
 from __future__ import print_function
 
@@ -25,6 +25,7 @@ from tensorflow_transform.saved import saved_transform_io
 from tensorflow_transform.tf_metadata import metadata_io
 from tensorflow_transform.tf_metadata import schema_utils
 from tfx.executors.trainer import TrainingSpec
+import tfx_example.features as f
 
 def _build_estimator(transform_output,
                      config,
@@ -48,28 +49,28 @@ def _build_estimator(transform_output,
   transformed_metadata = metadata_io.read_metadata(metadata_dir)
   transformed_feature_spec = transformed_metadata.schema.as_feature_spec()
 
-  transformed_feature_spec.pop(_transformed_name(_LABEL_KEY))
+  transformed_feature_spec.pop(_transformed_name(f._LABEL_KEY))
 
   real_valued_columns = [
       tf.feature_column.numeric_column(key, shape=())
-      for key in _transformed_names(_DENSE_FLOAT_FEATURE_KEYS)
+      for key in _transformed_names(f._DENSE_FLOAT_FEATURE_KEYS)
   ]
   categorical_columns = [
       tf.feature_column.categorical_column_with_identity(
-          key, num_buckets=_VOCAB_SIZE + _OOV_SIZE, default_value=0)
-      for key in _transformed_names(_VOCAB_FEATURE_KEYS)
+          key, num_buckets=f._VOCAB_SIZE + f._OOV_SIZE, default_value=0)
+      for key in _transformed_names(f._VOCAB_FEATURE_KEYS)
   ]
   categorical_columns += [
       tf.feature_column.categorical_column_with_identity(
-          key, num_buckets=_FEATURE_BUCKET_COUNT, default_value=0)
-      for key in _transformed_names(_BUCKET_FEATURE_KEYS)
+          key, num_buckets=f._FEATURE_BUCKET_COUNT, default_value=0)
+      for key in _transformed_names(f._BUCKET_FEATURE_KEYS)
   ]
   categorical_columns += [
       tf.feature_column.categorical_column_with_identity(  # pylint: disable=g-complex-comprehension
           key, num_buckets=num_buckets, default_value=0)
       for key, num_buckets in zip(
-          _transformed_names(_CATEGORICAL_FEATURE_KEYS),
-          _MAX_CATEGORICAL_FEATURE_VALUES)
+          _transformed_names(f._CATEGORICAL_FEATURE_KEYS),
+          f._MAX_CATEGORICAL_FEATURE_VALUES)
   ]
   return tf.estimator.DNNLinearCombinedClassifier(
       config=config,
@@ -91,7 +92,7 @@ def _example_serving_receiver_fn(transform_output, schema):
     Tensorflow graph which parses examples, applying tf-transform to them.
   """
   raw_feature_spec = _get_raw_feature_spec(schema)
-  raw_feature_spec.pop(_LABEL_KEY)
+  raw_feature_spec.pop(f._LABEL_KEY)
 
   raw_input_fn = tf.estimator.export.build_parsing_serving_input_receiver_fn(
       raw_feature_spec, default_batch_size=None)
@@ -148,7 +149,7 @@ def _eval_input_receiver_fn(transform_output, schema):
   return tfma.export.EvalInputReceiver(
       features=features,
       receiver_tensors=receiver_tensors,
-      labels=transformed_features[_transformed_name(_LABEL_KEY)])
+      labels=transformed_features[_transformed_name(f._LABEL_KEY)])
 
 
 def _input_fn(filenames, transform_output, batch_size=200):
@@ -178,7 +179,7 @@ def _input_fn(filenames, transform_output, batch_size=200):
   # We pop the label because we do not want to use it as a feature while we're
   # training.
   return transformed_features, transformed_features.pop(
-      _transformed_name(_LABEL_KEY))
+      _transformed_name(f._LABEL_KEY))
 
 
 # TFX will call this function
@@ -217,12 +218,12 @@ def trainer_fn(hparams, schema):
   serving_receiver_fn = lambda: _example_serving_receiver_fn(  # pylint: disable=g-long-lambda
       hparams.transform_output, schema)
 
-  exporter = tf.estimator.FinalExporter('chicago-taxi', serving_receiver_fn)
+  exporter = tf.estimator.FinalExporter('tfx-example', serving_receiver_fn)
   eval_spec = tf.estimator.EvalSpec(
       eval_input_fn,
       steps=hparams.eval_steps,
       exporters=[exporter],
-      name='chicago-taxi-eval')
+      name='tfx-example-eval')
 
   run_config = tf.estimator.RunConfig(
       save_checkpoints_steps=999, keep_checkpoint_max=1)

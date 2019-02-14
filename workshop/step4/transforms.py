@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Python source file include taxi pipeline functions and necesasry utils."""
+
 from __future__ import division
 from __future__ import print_function
 
@@ -25,6 +25,7 @@ from tensorflow_transform.saved import saved_transform_io
 from tensorflow_transform.tf_metadata import metadata_io
 from tensorflow_transform.tf_metadata import schema_utils
 from tfx.executors.trainer import TrainingSpec
+import tfx_example.features as f
 
 def _transformed_name(key):
   return key + '_xf'
@@ -75,30 +76,30 @@ def preprocessing_fn(inputs):
     Map from string feature key to transformed feature operations.
   """
   outputs = {}
-  for key in _DENSE_FLOAT_FEATURE_KEYS:
+  for key in f._DENSE_FLOAT_FEATURE_KEYS:
     # Preserve this feature as a dense float, setting nan's to the mean.
     outputs[_transformed_name(key)] = transform.scale_to_z_score(
         _fill_in_missing(inputs[key]))
 
-  for key in _VOCAB_FEATURE_KEYS:
+  for key in f._VOCAB_FEATURE_KEYS:
     # Build a vocabulary for this feature.
     outputs[_transformed_name(
         key)] = transform.compute_and_apply_vocabulary(
             _fill_in_missing(inputs[key]),
-            top_k=_VOCAB_SIZE,
-            num_oov_buckets=_OOV_SIZE)
+            top_k=f._VOCAB_SIZE,
+            num_oov_buckets=f._OOV_SIZE)
 
-  for key in _BUCKET_FEATURE_KEYS:
+  for key in f._BUCKET_FEATURE_KEYS:
     outputs[_transformed_name(key)] = transform.bucketize(
-        _fill_in_missing(inputs[key]), _FEATURE_BUCKET_COUNT)
+        _fill_in_missing(inputs[key]), f._FEATURE_BUCKET_COUNT)
 
-  for key in _CATEGORICAL_FEATURE_KEYS:
+  for key in f._CATEGORICAL_FEATURE_KEYS:
     outputs[_transformed_name(key)] = _fill_in_missing(inputs[key])
 
   # Was this passenger a big tipper?
-  taxi_fare = _fill_in_missing(inputs[_FARE_KEY])
-  tips = _fill_in_missing(inputs[_LABEL_KEY])
-  outputs[_transformed_name(_LABEL_KEY)] = tf.where(
+  taxi_fare = _fill_in_missing(inputs[f._FARE_KEY])
+  tips = _fill_in_missing(inputs[f._LABEL_KEY])
+  outputs[_transformed_name(f._LABEL_KEY)] = tf.where(
       tf.is_nan(taxi_fare),
       tf.cast(tf.zeros_like(taxi_fare), tf.int64),
       # Test if the tip was > 20% of the fare.

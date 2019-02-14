@@ -1,3 +1,5 @@
+# Copy model.py to ~/airflow/plugins/tfx_example
+
 # Add appropriate imports
 from tfx.components import Trainer
 

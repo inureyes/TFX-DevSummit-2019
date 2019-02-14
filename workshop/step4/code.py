@@ -1,3 +1,7 @@
+# Create ~/airflow/plugins/tfx_example
+# Copy features.py to ~/airflow/plugins/tfx_example
+# Copy transforms.py to ~/airflow/plugins/tfx_example
+
 # Add appropriate imports
 from tfx.components import Transform
 
