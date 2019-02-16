@@ -26,6 +26,7 @@ from tensorflow_transform.tf_metadata import metadata_io
 from tensorflow_transform.tf_metadata import schema_utils
 from tfx.executors.trainer import TrainingSpec
 import tfx_example.features as f
+import tfx_example.transforms as tft
 
 def _build_estimator(transform_output,
                      config,
@@ -49,27 +50,27 @@ def _build_estimator(transform_output,
   transformed_metadata = metadata_io.read_metadata(metadata_dir)
   transformed_feature_spec = transformed_metadata.schema.as_feature_spec()
 
-  transformed_feature_spec.pop(_transformed_name(f._LABEL_KEY))
+  transformed_feature_spec.pop(tft._transformed_name(f._LABEL_KEY))
 
   real_valued_columns = [
       tf.feature_column.numeric_column(key, shape=())
-      for key in _transformed_names(f._DENSE_FLOAT_FEATURE_KEYS)
+      for key in tft._transformed_names(f._DENSE_FLOAT_FEATURE_KEYS)
   ]
   categorical_columns = [
       tf.feature_column.categorical_column_with_identity(
           key, num_buckets=f._VOCAB_SIZE + f._OOV_SIZE, default_value=0)
-      for key in _transformed_names(f._VOCAB_FEATURE_KEYS)
+      for key in tft._transformed_names(f._VOCAB_FEATURE_KEYS)
   ]
   categorical_columns += [
       tf.feature_column.categorical_column_with_identity(
           key, num_buckets=f._FEATURE_BUCKET_COUNT, default_value=0)
-      for key in _transformed_names(f._BUCKET_FEATURE_KEYS)
+      for key in tft._transformed_names(f._BUCKET_FEATURE_KEYS)
   ]
   categorical_columns += [
       tf.feature_column.categorical_column_with_identity(  # pylint: disable=g-complex-comprehension
           key, num_buckets=num_buckets, default_value=0)
       for key, num_buckets in zip(
-          _transformed_names(f._CATEGORICAL_FEATURE_KEYS),
+          tft._transformed_names(f._CATEGORICAL_FEATURE_KEYS),
           f._MAX_CATEGORICAL_FEATURE_VALUES)
   ]
   return tf.estimator.DNNLinearCombinedClassifier(
@@ -91,7 +92,7 @@ def _example_serving_receiver_fn(transform_output, schema):
   Returns:
     Tensorflow graph which parses examples, applying tf-transform to them.
   """
-  raw_feature_spec = _get_raw_feature_spec(schema)
+  raw_feature_spec = tft._get_raw_feature_spec(schema)
   raw_feature_spec.pop(f._LABEL_KEY)
 
   raw_input_fn = tf.estimator.export.build_parsing_serving_input_receiver_fn(
@@ -123,7 +124,7 @@ def _eval_input_receiver_fn(transform_output, schema):
       - Label against which predictions will be compared.
   """
   # Notice that the inputs are raw features, not transformed features here.
-  raw_feature_spec = _get_raw_feature_spec(schema)
+  raw_feature_spec = tft._get_raw_feature_spec(schema)
 
   serialized_tf_example = tf.placeholder(
       dtype=tf.string, shape=[None], name='input_example_tensor')
@@ -149,7 +150,7 @@ def _eval_input_receiver_fn(transform_output, schema):
   return tfma.export.EvalInputReceiver(
       features=features,
       receiver_tensors=receiver_tensors,
-      labels=transformed_features[_transformed_name(f._LABEL_KEY)])
+      labels=transformed_features[tft._transformed_name(f._LABEL_KEY)])
 
 
 def _input_fn(filenames, transform_output, batch_size=200):
@@ -174,12 +175,12 @@ def _input_fn(filenames, transform_output, batch_size=200):
       filenames,
       batch_size,
       transformed_feature_spec,
-      reader=_gzip_reader_fn)
+      reader=tft._gzip_reader_fn)
 
   # We pop the label because we do not want to use it as a feature while we're
   # training.
   return transformed_features, transformed_features.pop(
-      _transformed_name(f._LABEL_KEY))
+      tft._transformed_name(f._LABEL_KEY))
 
 
 # TFX will call this function

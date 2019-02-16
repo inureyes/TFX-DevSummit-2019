@@ -5,7 +5,7 @@ from tfx.components import Trainer
 
 # Add components to the end of pipeline in create_pipeline()
 trainer = Trainer(
-    module_file=taxi_pipeline_utils,
+    module_file=model,
     transformed_examples=transform.outputs.transformed_examples,
     schema=infer_schema.outputs.output,
     transform_output=transform.outputs.transform_output,

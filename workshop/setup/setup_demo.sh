@@ -31,6 +31,11 @@ pip install apache-airflow
 printf "Initializing airflow db (sqllite)\n"
 airflow initdb
 
+# Adjust configuration
+sed -i 's/dag_dir_list_interval = 300/dag_dir_list_interval = 1/g' ~/airflow/airflow.cfg
+sed -i 's/dag_default_view = tree/dag_default_view = graph/g' ~/airflow/airflow.cfg
+sed -i 's/load_examples = True/load_examples = False/g' ~/airflow/airflow.cfg
+
 # Copy Dag to ~/airflow/dags
 mkdir -p ~/airflow/dags
 cp dags/tfx_example_pipeline.py ~/airflow/dags/

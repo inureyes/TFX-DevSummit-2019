@@ -1,4 +1,5 @@
 # Create ~/airflow/plugins/tfx_example
+# Copy __init__.py to ~/airflow/plugins/tfx_example
 # Copy features.py to ~/airflow/plugins/tfx_example
 # Copy transforms.py to ~/airflow/plugins/tfx_example
 
