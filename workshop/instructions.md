@@ -43,8 +43,8 @@ In a shell:
 virtualenv tfx-workshop
 source tfx-workshop/bin/activate
 mkdir tfx; cd tfx
-git clone <something>
-cd <into clone>/workshop/setup
+git clone https://github.com/rcrowe-google/TFX-DevSummit-2019.git
+cd TFX-DevSummit-2019/workshop/setup
 ./setup_demo.sh
 ```
 
@@ -105,6 +105,18 @@ validate_stats = ExampleValidator(
 * Wait for pipeline to complete
   * All dark green
   * Use refresh on right side or refresh page
+
+In a shell:
+
+```bash
+cd <repo>/workshop/notebooks
+jupyter notebook
+```
+
+In a browser:
+
+* Open step3.ipynb
+* Follow the notebook
 
 ## Step 4: Feature engineering
 
@@ -199,6 +211,11 @@ model_analyzer = Evaluator(
 * Wait for pipeline to complete
   * All dark green
   * Use refresh on right side or refresh page
+
+In a browser:
+
+* Open step6.ipynb
+* Follow the notebook
 
 ## Step 7: Deployment to production
 
