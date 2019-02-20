@@ -33,6 +33,8 @@ airflow initdb
 
 # Adjust configuration
 sed -i 's/dag_dir_list_interval = 300/dag_dir_list_interval = 1/g' ~/airflow/airflow.cfg
+sed -i 's/job_heartbeat_sec = 5/job_heartbeat_sec = 1/g' ~/airflow/airflow.cfg
+sed -i 's/scheduler_heartbeat_sec = 5/scheduler_heartbeat_sec = 1/g' ~/airflow/airflow.cfg
 sed -i 's/dag_default_view = tree/dag_default_view = graph/g' ~/airflow/airflow.cfg
 sed -i 's/load_examples = True/load_examples = False/g' ~/airflow/airflow.cfg
 
