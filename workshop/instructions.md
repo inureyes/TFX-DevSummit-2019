@@ -79,6 +79,13 @@ airflow scheduler
 
 ## Step 3: Dive into our data
 
+The first task in any data science or ML project is to understand
+and clean the data.
+
+* Understand the data types for each feature
+* Look for anomalies and missing values
+* Understand the distributions for each feature
+
 In an editor:
 
 ```python
@@ -120,6 +127,18 @@ In a browser:
 
 ## Step 4: Feature engineering
 
+We can increase the predictive quality of our data and/or reduce
+dimensionality with feature engineering.
+
+* Feature crosses
+* Vocabularies
+* Embeddings
+* PCA
+* Categorical encoding
+
+Write Once - The resulting transforms will be consistent between training
+and serving.
+
 In a shell:
 
 ```bash
@@ -149,6 +168,14 @@ transform = Transform(
   * Use refresh on right side or refresh page
 
 ## Step 5: Training
+
+Train a TensorFlow model with our nice, clean, transformed data.
+
+* Include the transformations from step 4 so that they are applied
+consistently
+* Save the results as a SavedModel for production
+* Visualize and explore the training process using TensorBoard
+* Also save an EvalSavedModel for analysis of model performance
 
 In a shell:
 
@@ -188,6 +215,17 @@ Back on Jupyter
 
 ## Step 6: Analyzing model performance
 
+Understanding more than just the top level metrics.
+
+* Users experience model performance for their queries only
+* Poor performance on slices of data can be hidden by top level
+metrics
+* Model fairness is important
+* Often key subsets of users or data are very important, and may
+be small
+    * Performance in critical but unusual conditions
+    * Performance for key audiences such as influencers
+
 In an editor:
 
 ```python
@@ -222,6 +260,20 @@ Back on Jupyter:
 * Follow the notebook
 
 ## Step 7: Deployment to production
+
+If the new model is ready, make it so.
+
+* If we’re replacing a model that is currently in production, first
+make sure that the new one is better
+* ModelValidator tells Pusher if the model is OK
+* Pusher deploys SavedModels to well-known locations
+
+Deployment targets receive new models from well-known locations
+
+* TensorFlow Serving
+* TensorFlow Lite
+* TensorFlow JS
+* TensorFlow Hub
 
 In an editor:
 
