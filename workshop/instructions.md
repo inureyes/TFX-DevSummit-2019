@@ -40,7 +40,7 @@ on what to do with it in the code.py file in the step directory.
 In a shell:
 
 ```bash
-virtualenv tfx-workshop
+virtualenv -p python2.7 tfx-workshop
 source tfx-workshop/bin/activate
 mkdir tfx; cd tfx
 git clone https://github.com/rcrowe-google/TFX-DevSummit-2019.git
