@@ -182,6 +182,10 @@ trainer = Trainer(
   * All dark green
   * Use refresh on right side or refresh page
 
+Back on Jupyter
+* Open step5.ipynb
+* Follow the notebook
+
 ## Step 6: Analyzing model performance
 
 In an editor:
@@ -212,7 +216,7 @@ model_analyzer = Evaluator(
   * All dark green
   * Use refresh on right side or refresh page
 
-In a browser:
+Back on Jupyter:
 
 * Open step6.ipynb
 * Follow the notebook
