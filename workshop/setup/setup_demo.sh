@@ -32,11 +32,11 @@ printf "Initializing airflow db (sqllite)\n"
 airflow initdb
 
 # Adjust configuration
-sed -i 's/dag_dir_list_interval = 300/dag_dir_list_interval = 1/g' ~/airflow/airflow.cfg
-sed -i 's/job_heartbeat_sec = 5/job_heartbeat_sec = 1/g' ~/airflow/airflow.cfg
-sed -i 's/scheduler_heartbeat_sec = 5/scheduler_heartbeat_sec = 1/g' ~/airflow/airflow.cfg
-sed -i 's/dag_default_view = tree/dag_default_view = graph/g' ~/airflow/airflow.cfg
-sed -i 's/load_examples = True/load_examples = False/g' ~/airflow/airflow.cfg
+sed -i .orig 's/dag_dir_list_interval = 300/dag_dir_list_interval = 1/g' ~/airflow/airflow.cfg
+sed -i .orig 's/job_heartbeat_sec = 5/job_heartbeat_sec = 1/g' ~/airflow/airflow.cfg
+sed -i .orig 's/scheduler_heartbeat_sec = 5/scheduler_heartbeat_sec = 1/g' ~/airflow/airflow.cfg
+sed -i .orig 's/dag_default_view = tree/dag_default_view = graph/g' ~/airflow/airflow.cfg
+sed -i .orig 's/load_examples = True/load_examples = False/g' ~/airflow/airflow.cfg
 
 # Copy Dag to ~/airflow/dags
 mkdir -p ~/airflow/dags
@@ -44,10 +44,10 @@ cp dags/tfx_example_pipeline.py ~/airflow/dags/
 
 # Copy pipeline code to ~/airflow/plugins
 mkdir -p ~/airflow/plugins
-cp -r plugins/tfx ~/airflow/plugins
+cp -R plugins/tfx ~/airflow/plugins
 
 # Copy data to ~/airflow/data
 mkdir -p ~/airflow/data/tfx_example
-cp -r data/tfx_example/* ~/airflow/data/tfx_example/
+cp -R data/tfx_example/* ~/airflow/data/tfx_example/
 
 printf "\nTFX workshop installed.\n"
