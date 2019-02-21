@@ -55,6 +55,8 @@ We’re following a typical ML development process
 
 ## Chicago Taxi Dataset
 
+![Taxi](images/taxi.png)
+
 ![Chicago taxi](images/chicago.png)
 
 ### Goal - Binary classification
@@ -117,6 +119,9 @@ and clean the data.
 * Understand the distributions for each feature
 
 ### Components
+
+![Data Components](images/examplegen1.png)
+![Data Components](images/examplegen2.png)
 
 ExampleGen
 
@@ -192,6 +197,8 @@ Write Once - The resulting transforms will be consistent between training
 and serving.
 
 ### Components
+
+![Transform](images/transform.png)
 
 Transform
 
