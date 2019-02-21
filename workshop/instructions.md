@@ -312,7 +312,7 @@ model_validator = ModelValidator(
 pusher = Pusher(   
     model_export=trainer.outputs.output,
     model_blessing=
-        Model_validator.outputs.blessing,
+        model_validator.outputs.blessing,
     serving_model_dir=serving_model_dir)
 ```
 
