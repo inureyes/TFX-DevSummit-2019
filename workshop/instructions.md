@@ -77,6 +77,8 @@ airflow scheduler
   * All dark green
   * Use refresh on right side or refresh page
 
+![Setup complete](images/step2.png)
+
 ## Step 3: Dive into our data
 
 The first task in any data science or ML project is to understand
@@ -112,6 +114,8 @@ validate_stats = ExampleValidator(
 * Wait for pipeline to complete
   * All dark green
   * Use refresh on right side or refresh page
+
+![Dive into data](images/step3.png)
 
 In a shell:
 
