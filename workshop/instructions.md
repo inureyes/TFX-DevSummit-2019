@@ -129,6 +129,8 @@ In a browser:
 * Open step3.ipynb
 * Follow the notebook
 
+![Dive into data](images/step3notebook.png)
+
 ## Step 4: Feature engineering
 
 We can increase the predictive quality of our data and/or reduce
@@ -222,6 +224,8 @@ Back on Jupyter
 * Open step5.ipynb
 * Follow the notebook
 
+![Training a Model](images/step5tboard.png)
+
 ## Step 6: Analyzing model performance
 
 Understanding more than just the top level metrics.
@@ -269,6 +273,8 @@ Back on Jupyter:
 
 * Open step6.ipynb
 * Follow the notebook
+
+![Analyzing model performance](images/step6notebook.png)
 
 ## Step 7: Deployment to production
 
