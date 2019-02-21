@@ -35,6 +35,32 @@ The code is organized by the steps that we're working on, so
 for each step you'll have the code you need and instructions
 on what to do with it in the code.py file in the step directory.
 
+## What we're doing
+
+We’re learning how to create an ML pipeline using TFX
+
+* TFX pipelines are appropriate when datasets are large
+* TFX pipelines are appropriate when training/serving consistency is important
+* TFX pipelines are appropriate when version management for inference is important
+* Google uses TFX pipelines for planet-scale ML
+
+We’re following a typical ML development process
+
+* Understanding our data
+* Feature engineering
+* Training
+* Analyze model performance
+* Lather, rinse, repeat
+* Deploy to production
+
+## Chicago Taxi Dataset
+
+![Chicago taxi](images/chicago.png)
+
+### Goal - Binary classification
+
+Will the customer tip more or less than 20%?
+
 ## Step 1: Setup your environment
 
 In a shell:
@@ -49,6 +75,8 @@ cd TFX-DevSummit-2019/workshop/setup
 ```
 
 ## Step 2: Bring up initial pipeline skeleton
+
+### Hello World
 
 In a shell:
 
@@ -88,7 +116,25 @@ and clean the data.
 * Look for anomalies and missing values
 * Understand the distributions for each feature
 
-In an editor:
+### Components
+
+ExampleGen
+
+* Converts input data to tf.Example
+
+StatisticsGen
+
+* Uses TensorFlow Data Validation (TFDV) to create descriptive statistics for dataset and features
+
+SchemaGen
+
+* Uses TensorFlow Data Validation (TFDV) to infer a schema for the dataset
+
+ExampleValidator
+
+* Uses TensorFlow Data Validation (TFDV) to look for anomalies and missing values
+
+### In an editor:
 
 ```python
 # Add the following code to ~/airflow/dags/tfx_example_pipeline.py
@@ -117,14 +163,14 @@ validate_stats = ExampleValidator(
 
 ![Dive into data](images/step3.png)
 
-In a shell:
+### In a shell:
 
 ```bash
 cd <repo>/workshop/notebooks
 jupyter notebook
 ```
 
-In a browser:
+### In a browser:
 
 * Open step3.ipynb
 * Follow the notebook
@@ -145,7 +191,13 @@ dimensionality with feature engineering.
 Write Once - The resulting transforms will be consistent between training
 and serving.
 
-In a shell:
+### Components
+
+Transform
+
+* Uses TensorFlow Transform (TFT) to perform data transformations
+
+### In a shell:
 
 ```bash
 mkdir ~/airflow/plugins/tfx_example
@@ -154,7 +206,7 @@ cp <repo>/setup/plugins/tfx_example/transforms.py ~/airflow/plugins/tfx_example
 cp <repo>/setup/plugins/tfx_example/features.py ~/airflow/plugins/tfx_example
 ```
 
-In an editor:
+### In an editor:
 
 ```python
 # Add the following code to ~/airflow/dags/tfx_example_pipeline.py
@@ -186,13 +238,19 @@ consistently
 * Visualize and explore the training process using TensorBoard
 * Also save an EvalSavedModel for analysis of model performance
 
-In a shell:
+### Components
+
+Trainer
+
+* Orchestrates the training of a TensorFlow model
+
+### In a shell:
 
 ```bash
 cp <repo>/setup/plugins/tfx_example/model.py ~/airflow/plugins/tfx_example
 ```
 
-In an editor:
+### In an editor:
 
 ```python
 # Add the following code to ~/airflow/dags/tfx_example_pipeline.py
@@ -220,7 +278,8 @@ trainer = Trainer(
 
 ![Training a Model](images/step5.png)
 
-Back on Jupyter
+### Back on Jupyter
+
 * Open step5.ipynb
 * Follow the notebook
 
@@ -239,7 +298,13 @@ be small
     * Performance in critical but unusual conditions
     * Performance for key audiences such as influencers
 
-In an editor:
+### Components
+
+Evaluator
+
+* Uses TensorFlow Model Analysis to perform deep analysis of the performance of the model that we trained
+
+### In an editor:
 
 ```python
 # Add the following code to ~/airflow/dags/tfx_example_pipeline.py
@@ -269,7 +334,7 @@ model_analyzer = Evaluator(
 
 ![Analyzing model performance](images/step6.png)
 
-Back on Jupyter:
+### Back on Jupyter:
 
 * Open step6.ipynb
 * Follow the notebook
@@ -292,7 +357,17 @@ Deployment targets receive new models from well-known locations
 * TensorFlow JS
 * TensorFlow Hub
 
-In an editor:
+### Components
+
+ModelValidator
+
+* Compares multiple versions of the trained model to make sure that the new version meets requirements
+
+Pusher
+
+* If the model passes ModelValidator, Pusher deploys the SavedModel to a well-known location
+
+### In an editor:
 
 ```python
 # Add the following code to ~/airflow/dags/tfx_example_pipeline.py
@@ -321,3 +396,5 @@ pusher = Pusher(
 * Wait for pipeline to complete
   * All dark green
   * Use refresh on right side or refresh page
+
+![Deployment to production](images/step7.png)
