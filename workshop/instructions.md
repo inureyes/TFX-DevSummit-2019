@@ -263,6 +263,8 @@ model_analyzer = Evaluator(
   * All dark green
   * Use refresh on right side or refresh page
 
+![Analyzing model performance](images/step6.png)
+
 Back on Jupyter:
 
 * Open step6.ipynb
