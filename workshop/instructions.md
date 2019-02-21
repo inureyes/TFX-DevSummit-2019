@@ -172,6 +172,8 @@ transform = Transform(
   * All dark green
   * Use refresh on right side or refresh page
 
+![Feature Engineering](images/step4.png)
+
 ## Step 5: Training
 
 Train a TensorFlow model with our nice, clean, transformed data.
@@ -213,6 +215,8 @@ trainer = Trainer(
 * Wait for pipeline to complete
   * All dark green
   * Use refresh on right side or refresh page
+
+![Training a Model](images/step5.png)
 
 Back on Jupyter
 * Open step5.ipynb
