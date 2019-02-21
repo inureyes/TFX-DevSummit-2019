@@ -147,6 +147,7 @@ In a shell:
 
 ```bash
 mkdir ~/airflow/plugins/tfx_example
+cp <repo>/setup/plugins/tfx_example/__init__.py ~/airflow/plugins/tfx_example
 cp <repo>/setup/plugins/tfx_example/transforms.py ~/airflow/plugins/tfx_example
 cp <repo>/setup/plugins/tfx_example/features.py ~/airflow/plugins/tfx_example
 ```
