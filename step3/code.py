@@ -1,4 +1,4 @@
-# Add the following code to ~/airflow/dags/tfx_example_pipeline.py
+# Add the following code to ~/airflow/dags/taxi_pipeline.py
 
 # Add appropriate imports
 from tfx.components import ExampleValidator

@@ -40,11 +40,11 @@ data_root = os.path.join(home_dir, 'data/taxi_data/')
 
 # Python module file to inject customized logic into the TFX components. The
 # Transform and Trainer both require user-defined functions to run successfully.
-taxi_module_file = os.path.join(home_dir, 'plugins/taxi/taxi_utils_solution.py')
+taxi_module_file = os.path.join(home_dir, 'dags/taxi_utils_solution.py')
 
 # Path which can be listened to by the model server.  Pusher will output the
 # trained model here.
-serving_model_dir = os.path.join(pipeline_root, 'serving_model/taxi_simple')
+serving_model_dir = os.path.join(pipeline_root, 'serving_model/taxi_solution')
 
 # Airflow-specific configs; these will be passed directly to airflow
 airflow_config = {
@@ -53,15 +53,14 @@ airflow_config = {
 }
 
 
-# TODO(b/124066911): Centralize tfx related config into one place.
 @PipelineDecorator(
-    pipeline_name='chicago_taxi_simple',
+    pipeline_name='taxi_solution',
     enable_cache=True,
     metadata_db_root=os.path.join(home_dir, 'data/tfx/metadata'),
     pipeline_root=pipeline_root)
 def create_pipeline():
   """Implements the chicago taxi pipeline with TFX."""
-  examples = csv_input(os.path.join(data_root, 'simple'))
+  examples = csv_input(data_root)
 
   # Brings data into the pipeline or otherwise joins/converts training data.
   example_gen = CsvExampleGen(input_base=examples)
