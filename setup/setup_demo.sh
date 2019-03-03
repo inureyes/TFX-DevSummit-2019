@@ -7,7 +7,7 @@ printf "Installing TFX workshop\n\n"
 printf "Installing TensorFlow\n"
 pip install tensorflow
 printf "Installing TFX\n"
-pip install tfx
+pip install tfx==0.12.0rc0
 # pip install tensorflow-data-validation
 # printf "Installing tensorflow-model-analysis\n"
 # pip install tensorflow-model-analysis

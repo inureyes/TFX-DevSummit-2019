@@ -31,7 +31,7 @@ import tensorflow as tf
 # from tensorflow_transform.saved import saved_transform_io # Step 4
 # from tensorflow_transform.tf_metadata import metadata_io # Step 4
 # from tensorflow_transform.tf_metadata import schema_utils # Step 4
-# import tensorflow_model_analysis as tfma # Step 6
+# import tensorflow_model_analysis as tfma # Step 5
 
 
 # Categorical features are assumed to each have a maximum value in the dataset.
@@ -254,31 +254,31 @@ _FARE_KEY = 'fare'
 #       - Set of raw, untransformed features.
 #       - Label against which predictions will be compared.
 #   """
-  # Notice that the inputs are raw features, not transformed features here.
-#  raw_feature_spec = _get_raw_feature_spec(schema)
-#
-#  serialized_tf_example = tf.placeholder(
+#   # Notice that the inputs are raw features, not transformed features here.
+#   raw_feature_spec = _get_raw_feature_spec(schema)
+
+#   serialized_tf_example = tf.placeholder(
 #      dtype=tf.string, shape=[None], name='input_example_tensor')
 
-  # Add a parse_example operator to the tensorflow graph, which will parse
-  # raw, untransformed, tf examples.
-#  features = tf.parse_example(serialized_tf_example, raw_feature_spec)
+#   # Add a parse_example operator to the tensorflow graph, which will parse
+#   # raw, untransformed, tf examples.
+#   features = tf.parse_example(serialized_tf_example, raw_feature_spec)
 
-  # Now that we have our raw examples, process them through the tf-transform
-  # function computed during the preprocessing step.
-#  _, transformed_features = (
+#   # Now that we have our raw examples, process them through the tf-transform
+#   # function computed during the preprocessing step.
+#   _, transformed_features = (
 #      saved_transform_io.partially_apply_saved_transform(
 #          os.path.join(transform_output, transform_fn_io.TRANSFORM_FN_DIR),
 #          features))
 
-  # The key name MUST be 'examples'.
-#  receiver_tensors = {'examples': serialized_tf_example}
+#   # The key name MUST be 'examples'.
+#   receiver_tensors = {'examples': serialized_tf_example}
 
-  # NOTE: Model is driven by transformed features (since training works on the
-  # materialized output of TFT, but slicing will happen on raw features.
-#  features.update(transformed_features)
+#   # NOTE: Model is driven by transformed features (since training works on the
+#   # materialized output of TFT, but slicing will happen on raw features.
+#   features.update(transformed_features)
 
-#  return tfma.export.EvalInputReceiver(
+#   return tfma.export.EvalInputReceiver(
 #      features=features,
 #      receiver_tensors=receiver_tensors,
 #      labels=transformed_features[_transformed_name(_LABEL_KEY)])
@@ -305,13 +305,13 @@ _FARE_KEY = 'fare'
 #   transformed_features = tf.contrib.learn.io.read_batch_features(
 #       filenames, batch_size, transformed_feature_spec, reader=_gzip_reader_fn)
 
-  # We pop the label because we do not want to use it as a feature while we're
-  # training.
+#   # We pop the label because we do not want to use it as a feature while we're
+#   # training.
 #   return transformed_features, transformed_features.pop(
 #       _transformed_name(_LABEL_KEY))
 
 
-# TFX will call this function
+# # TFX will call this function
 # def trainer_fn(hparams, schema):
 #   """Build the estimator using the high level API.
 
@@ -326,7 +326,7 @@ _FARE_KEY = 'fare'
 #       - eval_spec: Spec for eval.
 #       - eval_input_receiver_fn: Input function for eval.
 #   """
-  # Number of nodes in the first layer of the DNN
+#   # Number of nodes in the first layer of the DNN
 #   first_dnn_layer_size = 100
 #   num_dnn_layers = 4
 #   dnn_decay_factor = 0.7
@@ -374,7 +374,7 @@ _FARE_KEY = 'fare'
 #       config=run_config,
 #       warm_start_from=hparams.warm_start_from)
 
-  # Create an input receiver for TFMA processing
+#   # Create an input receiver for TFMA processing
 #   receiver_fn = lambda: _eval_input_receiver_fn(  # pylint: disable=g-long-lambda
 #       hparams.transform_output, schema)
 
