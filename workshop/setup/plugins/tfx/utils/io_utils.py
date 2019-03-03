@@ -25,6 +25,13 @@ def import_func(module_path, fn_name):
   _, fileext = os.path.splitext(module_path)
   assert fileext in ['.py', '.pyc']
 
+  # If a GCS bucket (gs://...), download to local filesystem first as
+  # importlib can't import from GCS
+  if module_path.startswith('gs://'):
+    module_filename = os.path.basename(module_path)
+    copy_file(module_path, module_filename, True)
+    module_path = module_filename
+
   if six.PY2:
     import imp  # pylint: disable=g-import-not-at-top
     user_module = imp.load_source('user_module', module_path)

@@ -12,7 +12,7 @@
 """Utilities for retrieving paths for various types of artifacts."""
 import os
 
-import tensorflow as tf
+from tfx.utils import io_utils
 
 EVAL_MODEL_DIR = 'eval_model_dir'
 SERVING_MODEL_DIR = 'serving_model_dir'
@@ -25,8 +25,8 @@ def eval_model_dir(output_uri):
 
 def eval_model_path(output_uri):
   """Returns path to timestamped exported model for evaluation purpose."""
-  eval_dir = eval_model_dir(output_uri)
-  return os.path.join(eval_dir, tf.gfile.ListDirectory(eval_dir)[-1])
+  model_dir = eval_model_dir(output_uri)
+  return io_utils.get_only_uri_in_dir(model_dir)
 
 
 def serving_model_dir(output_uri):
@@ -37,6 +37,5 @@ def serving_model_dir(output_uri):
 def serving_model_path(output_uri):
   """Returns path for timestamped and named serving model exported."""
   export_dir = os.path.join(serving_model_dir(output_uri), 'export')
-  model_dir = os.path.join(export_dir, tf.gfile.ListDirectory(export_dir)[-1])
-  model_name = tf.gfile.ListDirectory(model_dir)[-1]
-  return os.path.join(model_dir, model_name)
+  model_dir = io_utils.get_only_uri_in_dir(export_dir)
+  return io_utils.get_only_uri_in_dir(model_dir)

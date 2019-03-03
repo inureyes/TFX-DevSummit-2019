@@ -22,12 +22,13 @@ import argparse
 import base64
 import json
 
+import apache_beam as beam
 import tensorflow as tf
 
-from tfx.executors.base_runtime import BaseRuntime
+from tfx.executors.big_query_example_gen import BigQueryExampleGen
+from tfx.executors.csv_example_gen import CsvExampleGen
 from tfx.executors.evaluator import Evaluator
 from tfx.executors.example_validator import ExampleValidator
-from tfx.executors.examples_gen import ExamplesGen
 from tfx.executors.model_validator import ModelValidator
 from tfx.executors.pusher import Pusher
 from tfx.executors.schema_gen import SchemaGen
@@ -38,11 +39,13 @@ from tfx.executors.transform import Transform
 from tfx.utils.types import jsonify_tfx_type_dict
 from tfx.utils.types import parse_tfx_type_dict
 
+
 _EXECUTORS = {
     cls.__name__: cls for cls in [
         Setup,
         Evaluator,
-        ExamplesGen,
+        BigQueryExampleGen,
+        CsvExampleGen,
         ExampleValidator,
         ModelValidator,
         Pusher,
@@ -111,11 +114,9 @@ def main():
       'Executor {} do: inputs: {}, outputs: {}, exec_properties: {}'.format(
           args.executor, inputs, outputs, exec_properties))
 
-  # TODO(zhitaoli): Add a class for Docker image based runtime once there is
-  # customization needed.
-  runtime = BaseRuntime(pipeline_args)
-  executor = _EXECUTORS[args.executor](runtime)
-  executor.do(inputs, outputs, exec_properties)
+  pipeline = beam.Pipeline(argv=pipeline_args)
+  executor = _EXECUTORS[args.executor](pipeline)
+  executor.Do(inputs, outputs, exec_properties)
 
   # The last line of stdout will be pushed to xcom by Airflow.
   if args.write_outputs_stdout:

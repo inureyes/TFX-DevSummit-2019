@@ -15,14 +15,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tfx.utils.types
+from tfx.utils.types import DEFAULT_EXAMPLE_SPLITS
+from tfx.utils.types import TfxType
 
 
 def csv_inputs(uri, presplit=False):
-  """Helper function to declare inputs for csv_examples_gen component."""
-  instance = tfx.utils.types.TfxType(type_name='ExamplesPath')
+  """Helper function to declare inputs for csv_example_gen component."""
+  instance = TfxType(type_name='ExamplesPath')
   instance.uri = uri
   if presplit:
     instance.set_string_custom_property(
-        'presplit', ','.join(tfx.utils.types.DEFAULT_EXAMPLE_SPLITS))
+        'presplit', ','.join(DEFAULT_EXAMPLE_SPLITS))
   return [instance]

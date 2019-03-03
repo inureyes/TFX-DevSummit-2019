@@ -3,327 +3,377 @@
 # TODO(b/122676789): Please update component_generator to generate components.
 
 # DO NOT EDIT. Auto-generated code.
-import json
 
 from tfx.base_component import BaseComponent
+from tfx.base_component import ComponentOutputs
 from tfx.drivers.base_driver import BaseDriver
-from tfx.drivers.examples_gen import ExamplesGen as ExamplesGenDriver
+from tfx.drivers.csv_example_gen import CsvExampleGen as CsvExampleGenDriver
 from tfx.drivers.model_validator import ModelValidator as ModelValidatorDriver
 from tfx.drivers.pusher import Pusher as PusherDriver
 from tfx.drivers.trainer import Trainer as TrainerDriver
-from tfx.executors.big_query_examples_gen import BigQueryExamplesGen as BigQueryExamplesGenExecutor
+from tfx.executors.big_query_example_gen import BigQueryExampleGen as BigQueryExampleGenExecutor
+from tfx.executors.csv_example_gen import CsvExampleGen as CsvExampleGenExecutor
 from tfx.executors.evaluator import Evaluator as EvaluatorExecutor
-from tfx.executors.evaluator import SingleSliceSpecEncoder
 from tfx.executors.example_validator import ExampleValidator as ExampleValidatorExecutor
-from tfx.executors.examples_gen import ExamplesGen as ExamplesGenExecutor
 from tfx.executors.model_validator import ModelValidator as ModelValidatorExecutor
 from tfx.executors.pusher import Pusher as PusherExecutor
 from tfx.executors.schema_gen import SchemaGen as SchemaGenExecutor
 from tfx.executors.statistics_gen import StatisticsGen as StatisticsGenExecutor
 from tfx.executors.trainer import Trainer as TrainerExecutor
 from tfx.executors.transform import Transform as TransformExecutor
-import tfx.utils.types
+from tfx.utils.channel import as_channel
+from tfx.utils.channel import Channel
+from tfx.utils.types import DEFAULT_EXAMPLE_SPLITS
+from tfx.utils.types import TfxType
 
 
 # TODO(b/122677689): Let's make sure that code-gen generates Python Style
 # TODO(ruoyu): Align with internal tfservice.proto.
-# TODO(b/122678186): Taking one csv file and split into two splits for ExamplesGen
-class ExamplesGen(BaseComponent):
+class CsvExampleGen(BaseComponent):
+  """CSV ExampleGen component class."""
 
-  def __new__(cls, input_data, name=None):
-    component_name = 'examples_gen'
-    driver = ExamplesGenDriver
-    executor = ExamplesGenExecutor
-    input_dict = {'input_data': input_data}
+  def __init__(self, input_data, name=None, outputs=None):
+    component_name = 'csv_example_gen'
+    driver = CsvExampleGenDriver
+    executor = CsvExampleGenExecutor
+    input_dict = {'input_data': as_channel(input_data)}
     exec_properties = {}
-    return super(ExamplesGen, cls).__new__(
-        cls,
+    super(CsvExampleGen, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'output': [
-            tfx.utils.types.TfxType(
-                'ExamplesPath',
-                split=split,
-            ) for split in tfx.utils.types.DEFAULT_EXAMPLE_SPLITS
-        ]
-    }
+  def _create_outputs(self):
+    output_artifact_collection = [
+        TfxType(
+            'ExamplesPath',
+            split=split,
+        ) for split in DEFAULT_EXAMPLE_SPLITS
+    ]
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='ExamplesPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection)
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['input_data'], 'ExamplesPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['input_data'], 'ExamplesPath')
 
 
-class BigQueryExamplesGen(BaseComponent):
-  """BigQuery ExamplesGen component class."""
+class BigQueryExampleGen(BaseComponent):
+  """BigQuery ExampleGen component class."""
 
-  def __new__(cls, query, name=None):
-    component_name = 'big_query_examples_gen'
+  def __init__(self, query, name=None, outputs=None):
+    component_name = 'big_query_example_gen'
     # TODO(jyzhao): if table checksum and query matches, should hit cache.
     driver = BaseDriver
-    executor = BigQueryExamplesGenExecutor
+    executor = BigQueryExampleGenExecutor
     input_dict = {}
     exec_properties = {'query': query}
-    return super(BigQueryExamplesGen, cls).__new__(
-        cls,
+    super(BigQueryExampleGen, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'output': [
-            tfx.utils.types.TfxType(
-                'ExamplesPath',
-                split=split,
-            ) for split in tfx.utils.types.DEFAULT_EXAMPLE_SPLITS
-        ]
-    }
+  def _create_outputs(self):
+    output_artifact_collection = [
+        TfxType(
+            'ExamplesPath',
+            split=split,
+        ) for split in DEFAULT_EXAMPLE_SPLITS
+    ]
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='ExamplesPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection)
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
+  def _type_check(self, input_dict, exec_properties):
     pass
 
 
 class StatisticsGen(BaseComponent):
 
-  def __new__(cls, input_data, name=None):
+  def __init__(self, input_data, name=None, outputs=None):
     component_name = 'statistics_gen'
     driver = BaseDriver
     executor = StatisticsGenExecutor
-    input_dict = {'input_data': input_data}
+    input_dict = {'input_data': as_channel(input_data)}
     exec_properties = {}
-    return super(StatisticsGen, cls).__new__(
-        cls,
+    super(StatisticsGen, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'output': [
-            tfx.utils.types.TfxType(
-                'ExampleStatisticsPath',
-                split=split,
-            ) for split in tfx.utils.types.DEFAULT_EXAMPLE_SPLITS
-        ]
-    }
+  def _create_outputs(self):
+    output_artifact_collection = [
+        TfxType(
+            'ExampleStatisticsPath',
+            split=split,
+        ) for split in DEFAULT_EXAMPLE_SPLITS
+    ]
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='ExampleStatisticsPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection)
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['input_data'], 'ExamplesPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['input_data'], 'ExamplesPath')
 
 
 class SchemaGen(BaseComponent):
 
-  def __new__(cls, stats, executor=SchemaGenExecutor, name=None):
+  def __init__(self, stats, name=None, outputs=None):
     component_name = 'schema_gen'
     driver = BaseDriver
     executor = SchemaGenExecutor
-    input_dict = {'stats': stats}
+    input_dict = {'stats': as_channel(stats)}
     exec_properties = {}
-    return super(SchemaGen, cls).__new__(
-        cls,
+    super(SchemaGen, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    # TODO(b/122678513): Please codegen - appended 'schema.pbtxt'
-    return {'output': [tfx.utils.types.TfxType('SchemaPath',)]}
+  def _create_outputs(self):
+    output_artifact_collection = [TfxType('SchemaPath',)]
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='SchemaPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection)
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['stats'], 'ExampleStatisticsPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['stats'], 'ExampleStatisticsPath')
 
 
 class ExampleValidator(BaseComponent):
 
-  def __new__(cls, stats, schema, name=None):
+  def __init__(self, stats, schema, name=None, outputs=None):
     component_name = 'example_validator'
     driver = BaseDriver
     executor = ExampleValidatorExecutor
-    input_dict = {'stats': stats, 'schema': schema}
+    input_dict = {
+        'stats': as_channel(stats),
+        'schema': as_channel(schema)
+    }
     exec_properties = {}
-    return super(ExampleValidator, cls).__new__(
-        cls,
+    super(ExampleValidator, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
-  @classmethod
-  def _create_output_dict(cls):
-    # TODO(b/122683358): Please codegen - appended 'anomalies.pbtxt'
+
+  def _create_outputs(self):
+    output_artifact_collection = [
+        TfxType('ExampleValidationPath',)
+    ]
     # TODO(b/122682980): Please codegen - replace SkewResultsPath with
     # ExampleValidationPath
-    return {'output': [tfx.utils.types.TfxType('ExampleValidationPath',)]}
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='ExampleValidationPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection)
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['stats'], 'ExampleStatisticsPath')
-    cls._single_type_check(input_dict['schema'], 'SchemaPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['stats'], 'ExampleStatisticsPath')
+    self._single_type_check(input_dict['schema'], 'SchemaPath')
 
 
 class Transform(BaseComponent):
 
-  def __new__(cls,
-              input_data,
-              schema,
-              module_file,
-              executor=TransformExecutor,
-              name=None):
+  def __init__(self,
+               input_data,
+               schema,
+               module_file,
+               name=None,
+               outputs=None):
     component_name = 'transform'
     driver = BaseDriver
     executor = TransformExecutor
     input_dict = {
-        'input_data': input_data,
-        'schema': schema,
+        'input_data': as_channel(input_data),
+        'schema': as_channel(schema),
     }
-    exec_properties = {
-        'module_file': module_file
-    }
-    return super(Transform, cls).__new__(
-        cls,
+    exec_properties = {'module_file': module_file}
+    super(Transform, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    # TODO(b/122683985): Please codegen - appended 'tfx.transformed'
-    return {
-        'transform_output': [tfx.utils.types.TfxType('TransformPath',),],
-        'transformed_examples': [
-            tfx.utils.types.TfxType(
-                'ExamplesPath',
-                split=split,
-            ) for split in tfx.utils.types.DEFAULT_EXAMPLE_SPLITS
-        ],
-    }
+  def _create_outputs(self):
+    transform_output_artifact_collection = [
+        TfxType('TransformPath',)
+    ]
+    transformed_examples_artifact_collection = [
+        TfxType(
+            'ExamplesPath',
+            split=split,
+        ) for split in DEFAULT_EXAMPLE_SPLITS
+    ]
+    return ComponentOutputs({
+        'transform_output':
+            Channel(
+                type_name='TransformPath',
+                channel_name='transform_output',
+                static_artifact_collection=transform_output_artifact_collection
+            ),
+        'transformed_examples':
+            Channel(
+                type_name='ExamplesPath',
+                channel_name='transformed_examples',
+                static_artifact_collection=transformed_examples_artifact_collection
+            ),
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['input_data'], 'ExamplesPath')
-    cls._single_type_check(input_dict['schema'], 'SchemaPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['input_data'], 'ExamplesPath')
+    self._single_type_check(input_dict['schema'], 'SchemaPath')
     # TODO(b/122685556): Typecheck preprocessing_fn
 
 
 class Evaluator(BaseComponent):
 
-  def __new__(cls, examples, eval_spec, model_exports, name=None):
+  def __init__(self,
+               examples,
+               model_exports,
+               name=None,
+               outputs=None):
     component_name = 'evaluator'
     driver = BaseDriver
     executor = EvaluatorExecutor
     input_dict = {
-        'examples': examples,
-        'model_exports': model_exports,
+        'examples': as_channel(examples),
+        'model_exports': as_channel(model_exports),
     }
-    exec_properties = {
-        'eval_spec':
-            json.dumps(eval_spec or [], cls=SingleSliceSpecEncoder)}
-    return super(Evaluator, cls).__new__(
-        cls,
+    exec_properties = {}
+    super(Evaluator, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'output': [tfx.utils.types.TfxType('ModelEvalPath',)],
-    }
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['examples'], 'ExamplesPath')
-    cls._single_type_check(input_dict['model_exports'], 'ModelExportPath')
+  def _create_outputs(self):
+    output_artifact_collection = [TfxType('ModelEvalPath',)]
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='ModelEvalPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection),
+    })
+
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['examples'], 'ExamplesPath')
+    self._single_type_check(input_dict['model_exports'], 'ModelExportPath')
 
 
 class ModelValidator(BaseComponent):
   """Model validator component class."""
 
-  def __new__(cls, examples, model, eval_spec, name=None):
+  def __init__(self, examples, model, name=None, outputs=None):
     component_name = 'model_validator'
     driver = ModelValidatorDriver
     executor = ModelValidatorExecutor
     input_dict = {
-        'examples': examples,
-        'model': model,
+        'examples': as_channel(examples),
+        'model': as_channel(model),
     }
     exec_properties = {
-        'eval_spec': json.dumps(eval_spec or [], cls=SingleSliceSpecEncoder),
         'latest_blessed_model': None,  # Set in driver.
         'latest_blessed_model_id': None,  # Set in driver.
     }
-    return super(ModelValidator, cls).__new__(
-        cls,
+    super(ModelValidator, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'blessing': [tfx.utils.types.TfxType('ModelBlessingPath',),],
-        'results': [tfx.utils.types.TfxType('ModelValidationPath',),],
-    }
+  def _create_outputs(self):
+    blessing_artifact_collection = [
+        TfxType('ModelBlessingPath',),
+    ]
+    results_artifact_collection = [
+        TfxType('ModelValidationPath',),
+    ]
+    return ComponentOutputs({
+        'blessing':
+            Channel(
+                type_name='ModelBlessingPath',
+                channel_name='blessing',
+                static_artifact_collection=blessing_artifact_collection),
+        'results':
+            Channel(
+                type_name='ModelValidationPath',
+                channel_name='results',
+                static_artifact_collection=results_artifact_collection),
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['examples'], 'ExamplesPath')
-    cls._single_type_check(input_dict['model'], 'ModelExportPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['examples'], 'ExamplesPath')
+    self._single_type_check(input_dict['model'], 'ModelExportPath')
 
 
 class Trainer(BaseComponent):
 
-  def __new__(
-      cls,
-      # TODO(ruoyu): Please add 'module_file'(?) to proto, codegen
-      module_file,
-      transformed_examples,
-      transform_output,
-      schema,
-      train_steps=None,
-      eval_steps=None,
-      warm_starting=False,
-      name=None):
+  def __init__(self,
+               module_file,
+               transformed_examples,
+               transform_output,
+               schema,
+               train_steps=None,
+               eval_steps=None,
+               warm_starting=False,
+               name=None,
+               outputs=None):
     component_name = 'trainer'
     driver = TrainerDriver
-    input_dict = {
-        'transformed_examples': transformed_examples,
-        'transform_output': transform_output,
-        'schema': schema
-    }
     executor = TrainerExecutor
+    input_dict = {
+        'transformed_examples': as_channel(transformed_examples),
+        'transform_output': as_channel(transform_output),
+        'schema': as_channel(schema),
+    }
     exec_properties = {
         'train_steps': train_steps,
         'eval_steps': eval_steps,
@@ -331,60 +381,74 @@ class Trainer(BaseComponent):
         'warm_starting': warm_starting,
         'warm_start_from': None,  # Set in driver.
     }
-    return super(Trainer, cls).__new__(
-        cls,
+    super(Trainer, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'output': [tfx.utils.types.TfxType('ModelExportPath',),],
-    }
+  def _create_outputs(self):
+    output_artifact_collection = [
+        TfxType('ModelExportPath',),
+    ]
+    return ComponentOutputs({
+        'output':
+            Channel(
+                type_name='ModelExportPath',
+                channel_name='output',
+                static_artifact_collection=output_artifact_collection),
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['transformed_examples'], 'ExamplesPath')
-    cls._single_type_check(input_dict['transform_output'], 'TransformPath')
-    cls._single_type_check(input_dict['schema'], 'SchemaPath')
-    # TODO(b/122685557): Typecheck trainer_fn?
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['transformed_examples'], 'ExamplesPath')
+    self._single_type_check(input_dict['transform_output'], 'TransformPath')
+    self._single_type_check(input_dict['schema'], 'SchemaPath')
 
 
 class Pusher(BaseComponent):
   """Pusher component class."""
 
-  def __new__(cls, model_export, model_blessing, serving_model_dir, name=None):
+  def __init__(self,
+               model_export,
+               model_blessing,
+               serving_model_dir,
+               name=None,
+               outputs=None):
     component_name = 'pusher'
     driver = PusherDriver
     executor = PusherExecutor
     input_dict = {
-        'model_export': model_export,
-        'model_blessing': model_blessing
+        'model_export': as_channel(model_export),
+        'model_blessing': as_channel(model_blessing),
     }
     exec_properties = {
         'serving_model_dir': serving_model_dir,
         'latest_pushed_model': None,  # Set in driver.
     }
-    return super(Pusher, cls).__new__(
-        cls,
+    super(Pusher, self).__init__(
         component_name=component_name,
         unique_name=name,
         driver=driver,
         executor=executor,
         input_dict=input_dict,
+        outputs=outputs,
         exec_properties=exec_properties)
 
-  @classmethod
-  def _create_output_dict(cls):
-    return {
-        'model_push': [tfx.utils.types.TfxType('ModelPushPath',),],
-    }
+  def _create_outputs(self):
+    model_push_artifact_collection = [
+        TfxType('ModelPushPath',),
+    ]
+    return ComponentOutputs({
+        'model_push':
+            Channel(
+                type_name='ModelPushPath',
+                channel_name='model_push',
+                static_artifact_collection=model_push_artifact_collection),
+    })
 
-  @classmethod
-  def _type_check(cls, input_dict):
-    cls._single_type_check(input_dict['model_export'], 'ModelExportPath')
-    cls._single_type_check(input_dict['model_blessing'], 'ModelBlessingPath')
+  def _type_check(self, input_dict, exec_properties):
+    self._single_type_check(input_dict['model_export'], 'ModelExportPath')
+    self._single_type_check(input_dict['model_blessing'], 'ModelBlessingPath')

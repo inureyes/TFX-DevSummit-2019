@@ -12,10 +12,10 @@ from tfx.utils import types
 class Pusher(BaseExecutor):
   """Generic TFX pusher executor."""
 
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """Push model to target if blessed."""
     logger = logging_utils.get_logger(exec_properties['log_root'], 'exec')
-    self._log_startup(logger, inputs, outputs, exec_properties)
+    self._log_startup(inputs, outputs, exec_properties)
 
     model_export = types.get_single_instance(inputs['model_export'])
     model_export_uri = model_export.uri

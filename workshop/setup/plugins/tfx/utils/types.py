@@ -20,6 +20,7 @@ from ml_metadata.proto import metadata_store_pb2
 import tensorflow as tf
 from google.protobuf import json_format
 
+# TODO(jyzhao): fix states based on b/123311758.
 # Indicating there is an execution producing it.
 ARTIFACT_STATE_PENDING = 'pending'
 # Indicating artifact ready to be consumed.
@@ -27,7 +28,7 @@ ARTIFACT_STATE_PUBLISHED = 'published'
 # Indicating no data in artifact uri although it's not marked as deleted.
 ARTIFACT_STATE_MISSING = 'missing'
 # Indicating artifact should be garbage collected.
-ARTIFACT_STATE_DELETING = 'deleting'
+ARTIFACT_STATE_MARKED_FOR_DELETION = 'MARKED_FOR_DELETION'
 # Indicating artifact being garbage collected.
 ARTIFACT_STATE_DELETED = 'deleted'
 

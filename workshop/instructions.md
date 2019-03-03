@@ -71,7 +71,10 @@ In a shell:
 virtualenv -p python2.7 tfx-workshop
 source tfx-workshop/bin/activate
 mkdir tfx; cd tfx
-git clone https://github.com/rcrowe-google/TFX-DevSummit-2019.git
+
+# git clone https://github.com/tensorflow/workshops/TFX-DevSummit-2019.git
+cp -R <citc>/google3/experimental/users/robertcrowe/TFX-DevSummit-2019 .
+
 cd TFX-DevSummit-2019/workshop/setup
 ./setup_demo.sh
 ```
@@ -181,6 +184,10 @@ jupyter notebook
 * Follow the notebook
 
 ![Dive into data](images/step3notebook.png)
+
+For a more extensive example of using TFDV to explore and validate a
+dataset, [see the examples on tensorflow.org](
+https://www.tensorflow.org/tfx/data_validation)
 
 ## Step 4: Feature engineering
 
@@ -347,6 +354,10 @@ model_analyzer = Evaluator(
 * Follow the notebook
 
 ![Analyzing model performance](images/step6notebook.png)
+
+For a more extensive example of using TFMA to analyze model
+performance, [see the examples on tensorflow.org](
+https://www.tensorflow.org/tfx/model_analysis)
 
 ## Step 7: Deployment to production
 

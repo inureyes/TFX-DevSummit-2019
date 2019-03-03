@@ -14,10 +14,10 @@ DEFAULT_FILE_NAME = 'schema.pbtxt'
 class SchemaGen(BaseExecutor):
   """Generic TFX schema_gen executor."""
 
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """Infers the schema using tfdv."""
     logger = logging_utils.get_logger(exec_properties['log_root'], 'exec')
-    self._log_startup(logger, inputs, outputs, exec_properties)
+    self._log_startup(inputs, outputs, exec_properties)
 
     train_stats_uri = io_utils.get_only_uri_in_dir(
         types.get_split_uri(inputs['stats'], 'train'))

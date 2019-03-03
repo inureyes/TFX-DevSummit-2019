@@ -18,7 +18,7 @@ import collections
 
 from tfx.runtimes.tfx_metadata import Metadata
 from tfx.utils import logging_utils
-from tfx.utils.types import ARTIFACT_STATE_DELETING
+from tfx.utils.types import ARTIFACT_STATE_MARKED_FOR_DELETION
 
 
 class SpanBasedGarbageCollector(object):
@@ -43,10 +43,17 @@ class SpanBasedGarbageCollector(object):
     sorted_artifact = sorted(
         artifact_group,
         key=lambda artifact: artifact.properties['span'].int_value)
-    return sorted_artifact[:self._num_spans_to_keep]
+    return sorted_artifact[:len(sorted_artifact) - self._num_spans_to_keep]
 
   def do_garbage_collection(self):
-    """Marks qualified artifacts as garbage-collectable."""
+    """Marks qualified artifacts as garbage-collectable.
+
+    The artifacts marked will not be valid for use. However users should handle
+    real file deletion after marking artifacts as 'MARKED_FOR_DELETION'.
+
+    Returns:
+      Artifacts that marked for deletion.
+    """
 
     group_to_artifacts = collections.defaultdict(list)
     artifacts_to_gc = []
@@ -64,7 +71,8 @@ class SpanBasedGarbageCollector(object):
       # For every artifact that should be garbage collected, marks them in
       # ml metadata.
       for artifact_to_be_gc in artifacts_to_gc:
-        m.update_artifact_state(artifact_to_be_gc, ARTIFACT_STATE_DELETING)
+        m.update_artifact_state(artifact_to_be_gc,
+                                ARTIFACT_STATE_MARKED_FOR_DELETION)
         self._logger.info(
             'Artifact can be garbage collected: \n{}'.format(artifact_to_be_gc))
     return artifacts_to_gc

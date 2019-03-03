@@ -15,10 +15,10 @@ DEFAULT_FILE_NAME = 'anomalies.pbtxt'
 class ExampleValidator(BaseExecutor):
   """Generic TFX example validator executor."""
 
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """Validate the statistics against the schema and materialize anomalies."""
     logger = logging_utils.get_logger(exec_properties['log_root'], 'exec')
-    self._log_startup(logger, inputs, outputs, exec_properties)
+    self._log_startup(inputs, outputs, exec_properties)
 
     logger.info('Validating schema against the computed statistics.')
     schema = io_utils.parse_pbtxt_file(

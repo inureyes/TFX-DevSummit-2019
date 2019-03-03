@@ -10,62 +10,79 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import functools
+import abc
+from future.utils import with_metaclass
 
 
-# TODO(ruoyu): Make BaseComponent and BaseDecorator ABC.
-class BaseComponent(object):
-  """Base TFX component."""
+class ComponentOutputs(object):
+  """Helper class to wrap outputs from TFX components."""
 
-  def __new__(cls, component_name, unique_name, driver, executor, input_dict,
-              exec_properties):
-    cls._type_check(input_dict)
-    output_dict = cls._create_output_dict()
-    return cls._new_component(component_name, unique_name, driver, executor,
-                              input_dict, output_dict, exec_properties)
+  def __init__(self, d):
+    self.__dict__ = d
 
-  @classmethod
-  def _single_type_check(cls, target_list, expected_type_name):
-    for target in target_list:
-      if target.type_name != expected_type_name:
-        raise TypeError('Expects {} but found {}'.format(
-            expected_type_name, str(target.type_name)))
-
-  @classmethod
-  def _create_output_dict(cls):
-    pass
-
-  @classmethod
-  def _type_check(cls, input_dict):
-    pass
-
-  # TODO(ruoyu): Find a way to make this classmethod instead of staticmethod.
-  @staticmethod
-  def _new_component(component_name, unique_name, driver, executor, input_dict,
-                     output_dict, exec_properties):
-    pass
+  def get_all(self):
+    return self.__dict__
 
 
-class BaseDecorator(object):
-  """Base TFX pipeline decorator."""
+class BaseComponent(with_metaclass(abc.ABCMeta, object)):
+  """Base TFX component.
 
-  def __init__(self, **kwargs):
-    self._pipeline = self._new_pipeline(**kwargs)
-    self._kwargs = kwargs
+  This is the parent class of any TFX component.
 
-  def __call__(self, func):
+  Attributes:
+    component_name: Name of the component, should be unique per component class.
+    unique_name: Unique name for every component class instance.
+    driver: Driver class to handle pre-execution behaviors in a component.
+    executor: Executor class to do the real execution work.
+    input_dict: A [Text -> Channel] dict serving as the inputs to the component.
+    exec_properties: A [Text -> Any] dict serving as additional properties
+        needed for execution.
+    outputs: Optional Channel destinations of the component.
+  """
 
-    @functools.wraps(func)
-    def decorated():
-      BaseComponent._new_component = staticmethod(self._new_component)  # pylint: disable=protected-access
-      func()
-      return self._pipeline
+  def __init__(self, component_name, unique_name, driver, executor, input_dict,
+               outputs, exec_properties):
+    self.component_name = component_name
+    self.unique_name = unique_name
+    self.driver = driver
+    self.executor = executor
+    self.input_dict = input_dict
+    self.exec_properties = exec_properties
+    self.outputs = outputs or self._create_outputs()
+    self._type_check(self.input_dict, self.exec_properties)
 
-    return decorated
+  def _single_type_check(self, target, expected_type_name):
+    if target.type_name != expected_type_name:
+      raise TypeError('Expects {} but found {}'.format(expected_type_name,
+                                                       str(target.type_name)))
 
-  def _new_pipeline(self, **kwargs):
-    pass
+  def __str__(self):
+    return """
+{
+  component_name: {},
+  unique_name: {},
+  driver: {},
+  executor: {},
+  input_dict: {},
+  outputs: {},
+  exec_properties: {}
+}
+    """.format(self.component_name, self.unique_name, self.driver,
+               self.executor, self.input_dict, self.outputs,
+               self.exec_properties)
 
-  def _new_component(self, component_name, unique_name, driver, executor,
-                     input_dict, output_dict, exec_properties):
-    pass
+  def __repr__(self):
+    return self.__str__()
+
+  @abc.abstractmethod
+  def _create_outputs(self):
+    """Create outputs placeholder for components.
+
+    return: ComponentOutputs object containing the dict of [Text -> Channel]
+    """
+    raise NotImplementedError
+
+  @abc.abstractmethod
+  def _type_check(self, input_dict, exec_properties):
+    """Do type checking for the inputs and exec_properties."""
+    raise NotImplementedError

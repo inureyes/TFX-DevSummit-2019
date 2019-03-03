@@ -5,34 +5,34 @@ from __future__ import print_function
 
 import abc
 from future.utils import with_metaclass
+import tensorflow as tf
 
 
 class BaseExecutor(with_metaclass(abc.ABCMeta, object)):
   """Abstract TFX executor class."""
 
-  def __init__(self, runtime):
-    self._runtime = runtime
+  def __init__(self, pipeline, additional_pipeline_args=None):
+    self._pipeline = pipeline
+    self._additional_pipeline_args = additional_pipeline_args or dict()
 
   @abc.abstractmethod
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """Execute underlying component implementation."""
     pass
 
-  def _get_beam_pipeline_options(self):
-    """Creates a default beam.PipelineOptions."""
-    # TODO(zhitaoli): Implement this in runtime.
-    return self._runtime.get_beam_pipeline_options()
+  def _has_additional_pipeline_args(self, key):
+    """Check whether given additional pipeline args was provided."""
+    return key in self._additional_pipeline_args
 
-  def _log_startup(self, logger, inputs, outputs, exec_properties):
-    """Log inputs, outputs, and executor properties in a standard format."""
-    logger.info('Starting ' + self.__class__.__name__ + ' execution.')
+  def _get_additional_pipeline_args(self, key=None):
+    """Get additional pipeline args if specificed, or None otherwise."""
+    return self._additional_pipeline_args.get(key)
 
-    logger.info('Inputs for ' + self.__class__.__name__)
-    for k, v in inputs.items():
-      logger.info('{}:{}'.format(k, v))
-    logger.info('Runtime parameters for ' + self.__class__.__name__)
-    for k, v in exec_properties.items():
-      logger.info('{}:{}'.format(k, v))
-    logger.info('Outputs for ' + self.__class__.__name__)
-    for k, v in outputs.items():
-      logger.info('{}:{}'.format(k, v))
+  def _log_startup(self, inputs, outputs, exec_properties):
+    tf.logging.info('Starting {} execution.'.format(self.__class__.__name__))
+    tf.logging.info('Inputs for {} is: {}'.format(self.__class__.__name__,
+                                                  inputs))
+    tf.logging.info('Execution properties for {} is: {}'.format(
+        self.__class__.__name__, exec_properties))
+    tf.logging.info('Outputs for {} is: {}'.format(self.__class__.__name__,
+                                                   outputs))

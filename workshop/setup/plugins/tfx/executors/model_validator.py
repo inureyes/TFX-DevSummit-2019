@@ -1,11 +1,9 @@
 """Generic TFX model validator executor."""
-import json
+
 import os
 import apache_beam as beam
 import tensorflow_model_analysis as tfma
 from tfx.executors.base_executor import BaseExecutor
-# TODO(jyzhao): move SingleSliceSpecDecoder to a common place.
-from tfx.executors.evaluator import SingleSliceSpecDecoder
 from tfx.utils import io_utils
 from tfx.utils import logging_utils
 from tfx.utils import path_utils
@@ -20,25 +18,20 @@ BLESSED_MODEL_EVAL_RESULT_PATH = 'eval_results/blessed_model/'
 class ModelValidator(BaseExecutor):
   """Generic TFX model validator executor."""
 
-  def _run_model_analysis(self, model_dir, eval_examples_uri, eval_spec,
-                          eval_output):
+  def _run_model_analysis(self, model_dir, eval_examples_uri, slice_spec,
+                          eval_output, model_name):
     """Run model analysis and generate eval results."""
     shared_model = tfma.default_eval_shared_model(
-        eval_saved_model_path=model_dir,
-        add_metrics_callbacks=[
-            tfma.post_export_metrics.calibration_plot_and_prediction_histogram(
-            ),
-            tfma.post_export_metrics.auc_plots()
-        ])
-    with beam.Pipeline(options=self._get_beam_pipeline_options()) as pipeline:
+        eval_saved_model_path=model_dir)
+    with self._pipeline as pipeline:
       _ = (
           pipeline
-          | 'ReadData' >> beam.io.ReadFromTFRecord(
+          | 'ReadData.' + model_name >> beam.io.ReadFromTFRecord(
               file_pattern=io_utils.all_files_pattern(eval_examples_uri))
-          | 'ExtractEvaluateAndWriteResults' >>
+          | 'ExtractEvaluateAndWriteResults.' + model_name >>
           tfma.ExtractEvaluateAndWriteResults(
               eval_shared_model=shared_model,
-              slice_spec=eval_spec,
+              slice_spec=slice_spec,
               output_path=eval_output))
 
     eval_result = tfma.load_eval_result(output_path=eval_output)
@@ -65,7 +58,7 @@ class ModelValidator(BaseExecutor):
         return False
     return True
 
-  def _generate_blessing_result(self, logger, eval_examples_uri, eval_spec,
+  def _generate_blessing_result(self, logger, eval_examples_uri, slice_spec,
                                 current_model_dir, latest_blessed_model_dir,
                                 results_path):
     # TODO(jyzhao): make it real when tfma verifier_lib.py is done.
@@ -74,8 +67,9 @@ class ModelValidator(BaseExecutor):
     current_model_eval_result = self._run_model_analysis(
         model_dir=path_utils.eval_model_path(current_model_dir),
         eval_examples_uri=eval_examples_uri,
-        eval_spec=eval_spec,
-        eval_output=os.path.join(results_path, CURRENT_MODEL_EVAL_RESULT_PATH))
+        slice_spec=slice_spec,
+        eval_output=os.path.join(results_path, CURRENT_MODEL_EVAL_RESULT_PATH),
+        model_name='current')
     if not self._pass_threshold(current_model_eval_result):
       logger.info('Current model does not pass threshold.')
       return False
@@ -88,8 +82,9 @@ class ModelValidator(BaseExecutor):
     latest_blessed_model_eval_result = self._run_model_analysis(
         model_dir=path_utils.eval_model_path(latest_blessed_model_dir),
         eval_examples_uri=eval_examples_uri,
-        eval_spec=eval_spec,
-        eval_output=os.path.join(results_path, BLESSED_MODEL_EVAL_RESULT_PATH))
+        slice_spec=slice_spec,
+        eval_output=os.path.join(results_path, BLESSED_MODEL_EVAL_RESULT_PATH),
+        model_name='latest_blessed')
     if (self._compare_eval_result(logger, current_model_eval_result,
                                   latest_blessed_model_eval_result)):
       logger.info('Current model better than latest blessed model.')
@@ -97,14 +92,14 @@ class ModelValidator(BaseExecutor):
 
     return False
 
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """Validate current model against previously blessed model."""
     logger = logging_utils.get_logger(exec_properties['log_root'], 'exec')
-    self._log_startup(logger, inputs, outputs, exec_properties)
+    self._log_startup(inputs, outputs, exec_properties)
 
     eval_examples_uri = types.get_split_uri(inputs['examples'], 'eval')
-    eval_spec = json.loads(
-        exec_properties['eval_spec'], cls=SingleSliceSpecDecoder)
+    # TODO(b/125853306): support customized slice spec.
+    slice_spec = [tfma.slicer.SingleSliceSpec()]
     # Current model.
     current_model = types.get_single_instance(inputs['model'])
     current_model_dir = current_model.uri
@@ -132,7 +127,7 @@ class ModelValidator(BaseExecutor):
     blessed = self._generate_blessing_result(
         logger=logger,
         eval_examples_uri=eval_examples_uri,
-        eval_spec=eval_spec,
+        slice_spec=slice_spec,
         current_model_dir=current_model_dir,
         latest_blessed_model_dir=latest_blessed_model_dir,
         results_path=results)

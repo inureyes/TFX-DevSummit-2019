@@ -14,32 +14,31 @@
 # limitations under the License.
 import datetime
 import os
-from tfx.runtimes.tfx_airflow import PipelineDecorator
+from tfx.runtimes.airflow.airflow_runner import AirflowDAGRunner as TfxRunner
+from tfx.runtimes.pipeline import PipelineDecorator
 from tfx.utils.dsl_utils import csv_inputs
+from tfx.components import CsvExampleGen
 
 # Directory and data locations
 home_dir = os.path.join(os.environ['HOME'], 'airflow/')
+pipeline_root = os.path.join(home_dir, 'data/tfx/pipelines/')
 base_dir = os.path.join(home_dir, 'data/tfx_example/')
-output_dir = os.path.join(base_dir, 'pipelines/')
-
-# Modules for trainer and transform
-plugin_dir = os.path.join(home_dir, 'plugins/tfx_example/')
-model = os.path.join(plugin_dir, 'model.py')
-transforms = os.path.join(plugin_dir, 'transforms.py')
-
-# Path which can be listened by model server. Pusher will output model here.
-serving_model_dir = os.path.join(output_dir, 'tfx_example/serving_model')
+# Path to the model server directory. Pusher will output model here.
+serving_model_dir = os.path.join(pipeline_root, 'serving_model/tfx_example')
 
 @PipelineDecorator(
-    pipeline_name='tfx_example_pipeline_DAG',
+    pipeline_name='tfx_example',
     schedule_interval=None,
-    start_date=datetime.datetime(2019, 2, 1),
+    start_date=datetime.datetime(2018, 1, 1),
     enable_cache=True,
-    run_id='tfx-example-local',
     log_root='/var/tmp/tfx/logs',
-    output_dir=output_dir)
+    metadata_db_root=os.path.join(home_dir, 'data/tfx/metadata'),
+    pipeline_root=pipeline_root)
 def create_pipeline():
   """Implements the example pipeline with TFX."""
   examples = csv_inputs(os.path.join(base_dir, 'no_split/span_1'))
+  example_gen = CsvExampleGen(input_data=examples)
 
-pipeline = create_pipeline()  # pylint: disable=assignment-from-no-return
+  return [example_gen]
+
+pipeline = TfxRunner().run(create_pipeline())

@@ -1,20 +1,24 @@
-"""TFX ml metadata library."""
+# Copyright 2019 Google Inc. All Rights Reserved.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""TFX ml metadata library."""
+
 import collections
 import hashlib
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2
 import tensorflow as tf
+from tensorflow.python.lib.io import file_io
 from tfx.utils.types import ARTIFACT_STATE_PUBLISHED
 
 
@@ -33,7 +37,7 @@ class Metadata(object):
     return self
 
   def __exit__(self, exc_type, exc_val, exc_tb):
-    del self._store
+    pass
 
   def _prepare_artifact_type(self, artifact_type):
     if artifact_type.id:
@@ -41,10 +45,6 @@ class Metadata(object):
     type_id = self._store.put_artifact_type(artifact_type)
     artifact_type.id = type_id
     return artifact_type
-
-  def get_artifact_by_id(self, artifact_id):
-    [artifact] = self._store.get_artifacts_by_id([artifact_id])
-    return artifact
 
   def update_artifact_state(self, artifact, new_state):
     if not artifact.id:
@@ -60,21 +60,20 @@ class Metadata(object):
     [artifact_in_metadata] = self._store.get_artifacts_by_id([artifact.id])
     current_artifact_state = artifact_in_metadata.properties[
         'state'].string_value
-    if not current_artifact_state in expected_states:
+    if current_artifact_state not in expected_states:
       raise RuntimeError(
           'Artifact state for {} is {}, but one of {} expected'.format(
               artifact_in_metadata, current_artifact_state, expected_states))
 
   # TODO(ruoyu): Make this transaction-based once b/123573724 is fixed.
-  def publish_artifacts(self, raw_artifact_list,
-                        state=ARTIFACT_STATE_PUBLISHED):
+  def publish_artifacts(self, raw_artifact_list):
     """Publish a list of artifacts if any is not already published."""
     artifact_list = []
     for raw_artifact in raw_artifact_list:
       artifact_type = self._prepare_artifact_type(raw_artifact.artifact_type)
       raw_artifact.set_artifact_type(artifact_type)
       if not raw_artifact.artifact.id:
-        raw_artifact.state = state
+        raw_artifact.state = ARTIFACT_STATE_PUBLISHED
         [artifact_id] = self._store.put_artifacts([raw_artifact.artifact])
         raw_artifact.id = artifact_id
       artifact_list.append(raw_artifact.artifact)
@@ -104,40 +103,43 @@ class Metadata(object):
   def _prepare_output_event(self, execution_id, artifact_id, key, index):
     return self._prepare_event(execution_id, artifact_id, key, index, False)
 
-  def _prepare_execution_type(self, type_name, exec_properties={}):
-    """Get a execution type. Use existing type if available"""
+  def _prepare_execution_type(self, type_name, exec_properties):
+    """Get a execution type. Use existing type if available."""
     try:
       execution_type = self._store.get_execution_type(type_name)
+      if execution_type is None:
+        raise RuntimeError('Execution type is None for {}.'.format(type_name))
       return execution_type.id
     except tf.errors.NotFoundError:
-      execution_type = metadata_store_pb2.ExecutionType()
-      execution_type.name = type_name
-      for k, v in exec_properties.items():
-        execution_type.properties[k] = metadata_store_pb2.STRING
+      execution_type = metadata_store_pb2.ExecutionType(name=type_name)
       execution_type.properties['state'] = metadata_store_pb2.STRING
+      for k in exec_properties.keys():
+        execution_type.properties[k] = metadata_store_pb2.STRING
       # TODO(ruoyu): Find a better place / solution to the checksum logic.
       if 'module_file' in exec_properties:
         execution_type.properties['checksum_md5'] = metadata_store_pb2.STRING
 
       return self._store.put_execution_type(execution_type)
 
-  def _prepare_execution(self, type_name, state, exec_properties={}):
+  def _prepare_execution(self, type_name, state, exec_properties):
+    """Create a new execution with given type and state."""
     execution = metadata_store_pb2.Execution()
     execution.type_id = self._prepare_execution_type(type_name, exec_properties)
+    execution.properties['state'].string_value = tf.compat.as_text(state)
     for k, v in exec_properties.items():
       # We always convert execution properties to unicode.
       execution.properties[k].string_value = tf.compat.as_text(
           tf.compat.as_str_any(v))
-    execution.properties['state'].string_value = tf.compat.as_text(state)
-    # We also need to checksum UDF file to identify different binary being used.
-    # Do we have a better way to checksum a file than hashlib.md5?
+    # We also need to checksum UDF file to identify different binary being
+    # used. Do we have a better way to checksum a file than hashlib.md5?
     # TODO(ruoyu): Find a better place / solution to the checksum logic.
+    # TODO(ruoyu): SHA instead of MD5.
     if 'module_file' in exec_properties and exec_properties[
         'module_file'] and tf.gfile.Exists(exec_properties['module_file']):
+      contents = file_io.read_file_to_string(exec_properties['module_file'])
       execution.properties['checksum_md5'].string_value = tf.compat.as_text(
           tf.compat.as_str_any(
-              hashlib.md5(open(
-                  exec_properties['module_file']).read()).hexdigest()))
+              hashlib.md5(tf.compat.as_bytes(contents)).hexdigest()))
     return execution
 
   def _update_execution_state(self, execution, new_state):
@@ -243,7 +245,8 @@ class Metadata(object):
     if execution_ids_set:
       expected_previous_execution = self._prepare_execution(
           type_name, 'complete', exec_properties)
-      for execution in self._store.get_executions_by_id(execution_ids_set):
+      for execution in self._store.get_executions_by_id(
+          list(execution_ids_set)):
         expected_previous_execution.id = execution.id
         if execution == expected_previous_execution:
           tf.logging.info('Found previous execution: {}'.format(execution))

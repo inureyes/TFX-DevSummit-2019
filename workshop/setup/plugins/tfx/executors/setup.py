@@ -7,10 +7,10 @@ from tfx.utils import logging_utils
 class Setup(BaseExecutor):
   """Generic TFX setup executor."""
 
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """Create the root pipeline directory."""
     logger = logging_utils.get_logger(exec_properties['log_root'], 'exec')
-    self._log_startup(logger, inputs, outputs, exec_properties)
+    self._log_startup(inputs, outputs, exec_properties)
 
     project_path = exec_properties['project_path']
     if not tf.gfile.Exists(project_path):

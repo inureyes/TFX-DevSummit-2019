@@ -10,6 +10,8 @@ printf "Installing tensorflow-data-validation\n"
 pip install tensorflow-data-validation
 printf "Installing tensorflow-model-analysis\n"
 pip install tensorflow-model-analysis
+printf "${YELLOW}Installing Google API Client${NC}\n"
+pip install google-api-python-client
 printf "Installing ml-metadata\n"
 pip install ml_metadata
 printf "'Fixing' the jupyter version\n"
@@ -41,13 +43,20 @@ sed -i'.orig' 's/load_examples = True/load_examples = False/g' ~/airflow/airflow
 # Copy Dag to ~/airflow/dags
 mkdir -p ~/airflow/dags
 cp dags/tfx_example_pipeline.py ~/airflow/dags/
+cp dags/tfx_example_solution.py ~/airflow/dags/
 
 # Copy pipeline code to ~/airflow/plugins
 mkdir -p ~/airflow/plugins
 cp -R plugins/tfx ~/airflow/plugins
+cp -R plugins/tfx_example ~/airflow/plugins
+cp -R plugins/tfx_example_solution ~/airflow/plugins
 
 # Copy data to ~/airflow/data
 mkdir -p ~/airflow/data/tfx_example
 cp -R data/tfx_example/* ~/airflow/data/tfx_example/
+
+# Copy data to ~/airflow/data
+mkdir -p ~/airflow/data/tfx_example_solution
+cp -R data/tfx_example/* ~/airflow/data/tfx_example_solution/
 
 printf "\nTFX workshop installed.\n"

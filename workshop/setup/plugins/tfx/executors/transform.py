@@ -22,10 +22,10 @@ DEFAULT_FILE_NAME = 'transformed_examples'
 class Transform(BaseExecutor):
   """Generic TFX transform executor."""
 
-  def do(self, inputs, outputs, exec_properties):
+  def Do(self, inputs, outputs, exec_properties):
     """The main tf.transform method which analyzes and transforms data."""
     logger = logging_utils.get_logger(exec_properties['log_root'], 'exec')
-    self._log_startup(logger, inputs, outputs, exec_properties)
+    self._log_startup(inputs, outputs, exec_properties)
 
     train_data_uri = types.get_split_uri(inputs['input_data'], 'train')
     eval_data_uri = types.get_split_uri(inputs['input_data'], 'eval')
@@ -52,7 +52,7 @@ class Transform(BaseExecutor):
     raw_schema = dataset_schema.from_feature_spec(raw_feature_spec)
     raw_data_metadata = dataset_metadata.DatasetMetadata(raw_schema)
 
-    with beam.Pipeline(options=self._get_beam_pipeline_options()) as pipeline:
+    with self._pipeline as pipeline:
       with tft_beam.Context(temp_dir=transform_output):
         logger.info('Analyzing train data and creating transform_fn.')
         raw_train_data = (
