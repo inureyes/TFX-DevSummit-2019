@@ -70,24 +70,24 @@ def create_pipeline():
 #   statistics_gen = StatisticsGen(input_data=example_gen.outputs.examples) # Step 3
 
   # Generates schema based on statistics files.
-#   infer_schema = SchemaGen(stats=statistics_gen.outputs.output) # Step 3
+#   schema_gen = SchemaGen(stats=statistics_gen.outputs.output) # Step 3
 
   # Performs anomaly detection based on statistics and data schema.
 #   validate_stats = ExampleValidator( # Step 3
 #       stats=statistics_gen.outputs.output, # Step 3
-#       schema=infer_schema.outputs.output) # Step 3
+#       schema=schema_gen.outputs.output) # Step 3
 
   # Performs transformations and feature engineering in training and serving.
 #   transform = Transform( # Step 4
 #       input_data=example_gen.outputs.examples, # Step 4
-#       schema=infer_schema.outputs.output, # Step 4
+#       schema=schema_gen.outputs.output, # Step 4
 #       module_file=taxi_module_file) # Step 4
 
   # Uses user-provided Python function that implements a model using TF-Learn.
 #   trainer = Trainer( # Step 5
 #       module_file=taxi_module_file, # Step 5
 #       transformed_examples=transform.outputs.transformed_examples, # Step 5
-#       schema=infer_schema.outputs.output, # Step 5
+#       schema=schema_gen.outputs.output, # Step 5
 #       transform_output=transform.outputs.transform_output, # Step 5
 #       train_steps=10000, # Step 5
 #       eval_steps=5000, # Step 5
@@ -111,7 +111,7 @@ def create_pipeline():
 
   return [
       example_gen,
-#       statistics_gen, infer_schema, validate_stats, # Step 3
+#       statistics_gen, schema_gen, validate_stats, # Step 3
 #       transform, # Step 4
 #       trainer, # Step 5
 #       model_analyzer, # Step 6
